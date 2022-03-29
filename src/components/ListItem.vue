@@ -4,13 +4,14 @@
     <td>{{task.taskName}}</td>
     <td class="text-center"><span class="badge" :class="classLevel">{{ getLevelName }}</span></td>
     <td>
-      <button type="button" class="btn btn-warning">Edit</button>
-      <button type="button" class="btn btn-danger">Delete</button>
+      <button type="button" class="btn btn-warning" @click="handleEdit">Edit</button>
+      <button type="button" class="btn btn-danger" @click="handleDelete">Delete</button>
     </td>
   </tr>
 </template>
 
 <script>
+import mapLevel from "../mocks/level.js";
 export default {
   name: "ListItem",
   props: {
@@ -22,35 +23,25 @@ export default {
   },
   computed: {
     getLevelName(){
-      switch (this.task.level){
-        case 0:
-          return 'Small';
-        case 1:
-          return "Medium";
-        case 2:
-          return  "High";
-        default:
-          return "";
-      }
+      return this.mapLevel[this.task.level].level;
     },
     classLevel(){
-      switch (this.task.level){
-        case 0:
-          return {"badge-danger" : true};
-        case 1:
-          return {"badge-success" : true};
-        case 2:
-          return {"badge-secondary" : true};
-        default:
-          return {};
-      }
+      return this.mapLevel[this.task.level].classLevel;
     }
   },
   data(){
     return {
-
+      mapLevel: mapLevel
     }
   },
+  methods: {
+    handleDelete(){
+      this.$emit('handleDelete', this.task);
+    },
+    handleEdit(){
+      this.$emit('handleEdit', this.task);
+    }
+  }
 }
 </script>
 

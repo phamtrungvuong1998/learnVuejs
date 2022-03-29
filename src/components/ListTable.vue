@@ -12,7 +12,7 @@
       </thead>
 
       <tbody>
-        <ListItem v-for="(task, index) in listTask" :key="index" :task="task" :index="index + 1"></ListItem>
+        <ListItem v-for="(task, index) in listTask" :key="index" :task="task" @handleDelete="handleDelete" :index="index + 1" @handleEdit="handleEdit"></ListItem>
       </tbody>
 
     </table>
@@ -36,6 +36,14 @@ export default {
   },
   components:{
     ListItem
+  },
+  methods: {
+    handleDelete(task){
+      this.$emit('handleDelete', task);
+    },
+    handleEdit(task){
+      this.$emit('handleEdit', task);
+    }
   }
 }
 </script>

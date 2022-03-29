@@ -12,16 +12,16 @@
 
       <div class="row">
         <!-- CONTROL (SEARCH + SORT + ADD) : START -->
-        <CompControl></CompControl>
+        <CompControl :orderDir="orderDir" :orderBy="orderBy" :strSearch="strSearch" @handleSearch="handleSearch" @handleClear="handleClear" @handleSort="handleSort"></CompControl>
         <!-- CONTROL (SEARCH + SORT + ADD) : END -->
 
         <!-- FORM : START -->
-        <CompForm></CompForm>
+        <CompForm :isShowForm="isShowForm" @handleAddTask="handleAddTask()" @onClickAddNewTask="onClickAddNewTask" :taskSelected="taskSelected"></CompForm>
         <!-- FORM : END -->
       </div>
 
       <!-- LIST : START -->
-      <ListTable :listTask="listTask"></ListTable>
+      <ListTable :listTask="listTaskSort" @handleDelete="handleDelete" @handleEdit="handleEdit"></ListTable>
 
     </div>
   </div>
@@ -36,13 +36,77 @@ export default {
   name: 'App',
   data(){
     return {
-      listTask: listTask
+      listTask: listTask,
+      isShowForm: false,
+      strSearch: "",
+      orderBy: "name",
+      orderDir: "asc",
+      taskSelected: null
     }
   },
   components:{
     ListTable,
     CompControl,
     CompForm
+  },
+  methods:{
+    handleAddTask(){
+        this.isShowForm = !this.isShowForm;
+        this.taskSelected = null;
+    },
+    handleSearch(data){
+        this.strSearch = data;
+        console.log(this.strSearch);
+    },
+    handleClear(data){
+      this.strSearch = data;
+    },
+    handleSort(orderBy, orderDir){
+      this.orderBy = orderBy;
+      this.orderDir = orderDir;
+    },
+    compareName(a, b){
+      var numberSort = this.orderDir == 'asc' ? -1 : 1;
+      if (a.taskName < b.taskName) return numberSort;
+      else if (a.taskName > b.taskName) return numberSort * (-1);
+      return 0;
+    },
+    compareLevel(a, b){
+      var levelSort = this.orderDir == 'asc' ? -1 : 1;
+      if (a.level < b.level) return levelSort;
+      else if (a.level > b.level) return levelSort * (-1);
+      return 0;
+    },
+    handleDelete(task){
+      this.listTask = this.listTask.filter(item => item.id != task.id);
+    },
+    onClickAddNewTask(objTask){
+      this.listTask.push(objTask);
+      this.isShowForm = false;
+    },
+    handleEdit(task){
+      // this.isShowForm = true;
+      this.taskSelected = task;
+
+    }
+  },
+  computed: {
+    listTaskSearch(){
+      var newItems = [];
+      var strSearch = this.strSearch;
+      newItems = this.listTask.filter( item => item.taskName.toLowerCase().includes(strSearch.toLowerCase()) == true);
+      return newItems;
+    },
+    listTaskSort(){
+      var listTaskSort = [...this.listTaskSearch];
+      if (this.orderBy == 'name'){
+        listTaskSort.sort(this.compareName);
+      }else if (this.orderBy == 'level'){
+        listTaskSort.sort(this.compareLevel);
+      }
+
+      return listTaskSort;
+    }
   }
 }
 </script>
