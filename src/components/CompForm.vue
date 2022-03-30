@@ -18,8 +18,8 @@
           <option value="2">High</option>
         </select>
       </div>
-
-      <button type="button" class="btn btn-primary" @click="onClickAddNewTask">Submit</button>
+      <button type="button" class="btn btn-primary" @click="onClickAddNewTask" v-if="taskSelected == null">Submit</button>
+      <button type="button" class="btn btn-primary" @click="onClickEditNewTask" v-else>Update</button>
       <button type="button" class="btn btn-secondary" @click="onClickAddTask()">Cancel</button>
     </form>
   </div>
@@ -43,19 +43,29 @@ export default {
     onClickAddTask(){
       this.$emit('handleAddTask');
     },
-    onClickAddNewTask(){
-      if (this.taskName == ""){
-        alert("Vui lòng điền name");
-      }else{
-        var objTask = {
-          id : uuidv4(),
+    onClickEditNewTask(){
+      var objEditTask = {
+          id : this.taskSelected.id,
           taskName : this.taskName,
-          level : this.level
+          level : parseInt(this.level)
+      };
+      this.$emit('onClickEditNewTask', objEditTask);
+      this.taskName = "";
+      this.level = 0;
+    },
+    onClickAddNewTask(){
+        if (this.taskName == ""){
+          alert("Vui lòng điền name");
+        }else{
+          var objTask = {
+            id : uuidv4(),
+            taskName : this.taskName,
+            level : this.level
+          }
+          this.$emit('onClickAddNewTask', objTask);
+          this.taskName = "";
+          this.level = 0;
         }
-        this.$emit('onClickAddNewTask', objTask);
-        this.taskName = "";
-        this.level = 0;
-      }
     }
   },
   data(){
@@ -64,8 +74,13 @@ export default {
       level: 0
     }
   },
-  beforeUpdate() {
-    console.log(this.taskSelected);
+  watch: {
+    taskSelected: function (newData){
+      if (this.taskSelected !== null){
+        this.taskName = newData.taskName;
+        this.level = newData.level;
+      }
+    }
   }
 }
 </script>

@@ -12,11 +12,13 @@
 
       <div class="row">
         <!-- CONTROL (SEARCH + SORT + ADD) : START -->
-        <CompControl :orderDir="orderDir" :orderBy="orderBy" :strSearch="strSearch" @handleSearch="handleSearch" @handleClear="handleClear" @handleSort="handleSort"></CompControl>
+        <CompControl :orderDir="orderDir" :orderBy="orderBy" :strSearch="strSearch" @handleSearch="handleSearch"
+                     @handleClear="handleClear" @handleSort="handleSort"></CompControl>
         <!-- CONTROL (SEARCH + SORT + ADD) : END -->
 
         <!-- FORM : START -->
-        <CompForm :isShowForm="isShowForm" @handleAddTask="handleAddTask()" @onClickAddNewTask="onClickAddNewTask" :taskSelected="taskSelected"></CompForm>
+        <CompForm :isShowForm="isShowForm" @handleAddTask="handleAddTask()" @onClickAddNewTask="onClickAddNewTask"
+                  :taskSelected="taskSelected" @onClickEditNewTask="onClickEditNewTask"></CompForm>
         <!-- FORM : END -->
       </div>
 
@@ -31,12 +33,12 @@
 import ListTable from "./components/ListTable.vue";
 import CompControl from "./components/CompControl.vue";
 import CompForm from "./components/CompForm.vue";
-import listTask from "./mocks/task.js";
+
 export default {
   name: 'App',
-  data(){
+  data() {
     return {
-      listTask: listTask,
+      listTask: [],
       isShowForm: false,
       strSearch: "",
       orderBy: "name",
@@ -44,68 +46,85 @@ export default {
       taskSelected: null
     }
   },
-  components:{
+  components: {
     ListTable,
     CompControl,
     CompForm
   },
-  methods:{
-    handleAddTask(){
-        this.isShowForm = !this.isShowForm;
-        this.taskSelected = null;
+  methods: {
+    handleAddTask() {
+      this.isShowForm = !this.isShowForm;
+      this.taskSelected = null;
     },
-    handleSearch(data){
-        this.strSearch = data;
-        console.log(this.strSearch);
-    },
-    handleClear(data){
+    handleSearch(data) {
       this.strSearch = data;
     },
-    handleSort(orderBy, orderDir){
+    handleClear(data) {
+      this.strSearch = data;
+    },
+    handleSort(orderBy, orderDir) {
       this.orderBy = orderBy;
       this.orderDir = orderDir;
     },
-    compareName(a, b){
+    compareName(a, b) {
       var numberSort = this.orderDir == 'asc' ? -1 : 1;
       if (a.taskName < b.taskName) return numberSort;
       else if (a.taskName > b.taskName) return numberSort * (-1);
       return 0;
     },
-    compareLevel(a, b){
+    compareLevel(a, b) {
       var levelSort = this.orderDir == 'asc' ? -1 : 1;
       if (a.level < b.level) return levelSort;
       else if (a.level > b.level) return levelSort * (-1);
       return 0;
     },
-    handleDelete(task){
+    handleDelete(task) {
       this.listTask = this.listTask.filter(item => item.id != task.id);
     },
-    onClickAddNewTask(objTask){
+    onClickAddNewTask(objTask) {
       this.listTask.push(objTask);
       this.isShowForm = false;
     },
-    handleEdit(task){
+    handleEdit(task) {
       // this.isShowForm = true;
       this.taskSelected = task;
-
+      this.isShowForm = true;
+    },
+    onClickEditNewTask(data) {
+      var index = this.listTask.findIndex(item => item.id == data.id);
+      if (index != -1) {
+        this.listTask.splice(index, 1, data);
+        this.handleAddTask();
+      }
     }
   },
   computed: {
-    listTaskSearch(){
+    listTaskSearch() {
       var newItems = [];
       var strSearch = this.strSearch;
-      newItems = this.listTask.filter( item => item.taskName.toLowerCase().includes(strSearch.toLowerCase()) == true);
+      newItems = this.listTask.filter(item => item.taskName.toLowerCase().includes(strSearch.toLowerCase()) == true);
       return newItems;
     },
-    listTaskSort(){
+    listTaskSort() {
       var listTaskSort = [...this.listTaskSearch];
-      if (this.orderBy == 'name'){
+      if (this.orderBy == 'name') {
         listTaskSort.sort(this.compareName);
-      }else if (this.orderBy == 'level'){
+      } else if (this.orderBy == 'level') {
         listTaskSort.sort(this.compareLevel);
       }
 
       return listTaskSort;
+    }
+  },
+  created() {
+    if (localStorage.getItem('task') != null) {
+      this.listTask = JSON.parse(localStorage.getItem('task'));
+    }
+  },
+  watch: {
+    listTask: function (newTask) {
+      var taskString = JSON.stringify(newTask);
+      localStorage.setItem('task', taskString);
     }
   }
 }
@@ -119,7 +138,8 @@ export default {
 body {
   padding: 100px 0;
 }
-.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+
+.table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
   vertical-align: middle;
 }
 
@@ -140,10 +160,12 @@ span.badge-medium {
   color: #fff;
   background-color: #28a745;
 }
+
 .btn-block {
   display: block;
   width: 100%;
 }
+
 .form-inline .form-control {
   display: inline-block;
   width: auto;
